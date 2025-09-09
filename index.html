@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlideVault2.0</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+        :root {
+            --primary-color: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary-color: #f8fafc;
+            --accent-color: #0ea5e9;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .welcome-message {
+            text-align: center;
+            order: 2;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            order: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            order: 3;
+        }
+
+        .download-icon {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, var(--accent-color), #0284c7);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+            z-index: 200;
+        }
+
+        .download-icon:hover {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, transparent, rgba(239, 68, 68, 0.05));
+            border: 1.5px solid var(--danger-color);
+            color: var(--danger-color);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: var(--transition);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            min-height: calc(100vh - 140px);
+        }
+
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 140px);
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .form-group {
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        input,
+        select,
+        button {
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            background: white;
+            color: var(--text-primary);
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 44px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-light);
+            color: var(--primary-light);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--secondary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 1.25rem 2rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .tab-button.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+            background: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .tab-content {
+            padding: 2rem;
+        }
+
+        .sub-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+        }
+
+        .sub-tabs .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: calc(var(--border-radius) - 4px);
+            border-bottom: none;
+            font-size: 0.9rem;
+        }
+
+        .sub-tabs .tab-button.active {
+            background: white;
+            border-bottom: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            border-radius: var(--border-radius);
+            background: var(--secondary-color);
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.02);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            margin: 1rem 0;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: var(--secondary-color);
+            margin: 0.75rem 0;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .file-item:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-light);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            color: white;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .file-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .file-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .file-actions .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            min-height: auto;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--secondary-color);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 0.95rem;
+            background: white;
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--text-secondary);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .clear-search:hover {
+            background: var(--danger-color);
+        }
+
+        .upload-btn-modern {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            min-width: auto;
+        }
+
+        .upload-btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.35);
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        }
+
+        .upload-btn-modern:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(30, 58, 138, 0.4);
+        }
+
+        .upload-btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transition: left 0.4s;
+        }
+
+        .upload-btn-modern:hover::before {
+            left: 100%;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            margin-top: auto;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer strong {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .header-content {
+                gap: 0.5rem;
+            }
+
+            .logo {
+                font-size: 1.1rem;
+            }
+
+            .welcome-message span {
+                font-size: 0.9rem !important;
+            }
+
+            .container {
+                margin: 0.5rem;
+                border-radius: var(--border-radius);
+                min-height: calc(100vh - 100px);
+            }
+
+            .auth-card {
+                padding: 2rem 1.5rem;
+                margin: 0 1rem;
+            }
+
+            .auth-title {
+                font-size: 1.5rem;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                padding: 1rem 1.5rem;
+                font-size: 0.9rem;
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .tab-content {
+                padding: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .sub-tabs {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .sub-tabs .tab-button {
+                padding: 0.75rem;
+                text-align: center;
+            }
+
+            .upload-area {
+                padding: 1.5rem 1rem;
+                margin: 1rem 0;
+            }
+
+            .upload-area i {
+                font-size: 2rem;
+            }
+
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .file-info {
+                width: 100%;
+            }
+
+            .file-actions {
+                width: 100%;
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+            .file-actions .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .modal {
+                padding: 1rem;
+            }
+
+            .modal-content {
+                max-width: 95vw;
+                max-height: 90vh;
+            }
+
+            .modal-header {
+                padding: 1rem;
+            }
+
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .modal-footer {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .footer {
+                padding: 1rem 0.5rem;
+            }
+
+            .footer p {
+                font-size: 0.8rem;
+                line-height: 1.4;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header {
+                padding: 0.5rem;
+            }
+
+            .logo {
+                font-size: 1rem;
+            }
+
+            .welcome-message span {
+                font-size: 0.8rem !important;
+            }
+
+            .container {
+                margin: 0.25rem;
+            }
+
+            .auth-card {
+                padding: 1.5rem 1rem;
+                margin: 0 0.5rem;
+            }
+
+            .tab-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.8rem;
+                min-width: 100px;
+            }
+
+            .section-title {
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+            }
+
+            .upload-area {
+                padding: 1rem 0.75rem;
+            }
+
+            .file-name {
+                font-size: 0.9rem;
+            }
+
+            .file-meta {
+                font-size: 0.75rem;
+            }
+
+            .modal-content {
+                max-width: 98vw;
+            }
+
+            .btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <!-- App Header -->
+    <div id="appHeader" class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>SlideVault2.0</span>
+            </div>
+            <div class="welcome-message">
+                <span id="welcomeText" style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem;">
+                    Welcome <span id="userIdDisplay"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Position Buttons -->
+    <button id="downloadsBtn" class="download-icon hidden" onclick="showDownloads()" title="My Downloads">
+        <i class="fas fa-download"></i>
+    </button>
+    <button id="logoutBtn" class="logout-btn hidden" onclick="logout()" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+    </button>
+
+    <div class="container">
+        <!-- Authentication Section -->
+        <div id="authSection">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <!-- Sign Up Form -->
+                    <div id="signup">
+                        <div class="auth-title">Welcome</div>
+                        <div class="auth-subtitle">Create your account to get started</div>
+
+                        <div class="form-group">
+                            <label for="studentId"><i class="fas fa-user"></i> User Name</label>
+                            <input id="studentId" placeholder="Enter User Name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pin"><i class="fas fa-lock"></i> Set 4-Digit PIN</label>
+                            <input id="pin" type="password" placeholder="Enter 4-digit PIN" maxlength="4"
+                                pattern="[0-9]{4}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;"
+                                onclick="signup()">
+                                <i class="fas fa-user-plus"></i>
+                                Create Account
+                            </button>
+                            <button class="btn btn-secondary" style="width: 100%;" onclick="showLogin()">
+                                Already have account? Sign In
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div id="login" class="hidden">
+                        <div class="auth-title">Welcome Back</div>
+                        <div class="auth-subtitle">Sign in to your account</div>
+
+                        <div class="form-group">
+                            <label for="loginId"><i class="fas fa-user"></i> User Name</label>
+                            <input id="loginId" placeholder="Enter User Name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loginPin"><i class="fas fa-lock"></i> PIN</label>
+                            <input id="loginPin" type="password" placeholder="Enter 4-digit PIN" maxlength="4" required>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="login()">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Sign In
+                            </button>
+                            <button class="btn btn-secondary" style="width: 100%;" onclick="showSignup()">
+                                Don't have account? Sign Up
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div id="main" class="hidden">
+            <!-- Main Tabs -->
+            <div class="tabs">
+                <button id="personalTab" class="tab-button" onclick="showTab('personal')">
+                    <i class="fas fa-folder-user"></i>
+                    Personal Files
+                </button>
+                <button id="adminTab" class="tab-button hidden" onclick="showTab('admin')">
+                    <i class="fas fa-shield-alt"></i>
+                    Admin Panel
+                </button>
+                <button id="slidesTab" class="tab-button" onclick="showTab('slides')">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Course Slides
+                </button>
+            </div>
+
+            <!-- Personal Uploads Tab -->
+            <div id="personal" class="tab-content">
+                <div class="sub-tabs">
+                    <button class="tab-button active" onclick="showPersonalSection('upload')">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        Upload Files
+                    </button>
+                    <button class="tab-button" onclick="showPersonalSection('myfiles')">
+                        <i class="fas fa-folder-open"></i>
+                        My Files
+                    </button>
+                </div>
+
+                <div id="personalUpload">
+                    <div class="section-title">
+                        <i class="fas fa-upload"></i>
+                        Upload Your Files
+                    </div>
+                    <div class="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="form-group">
+                            <label for="customFileName">Custom File Name (optional)</label>
+                            <input id="customFileName" placeholder="Enter custom name or leave empty to use original">
+                        </div>
+                        <input type="file" id="personalFile" multiple class="file-input">
+                        <p>Select files to upload to your personal storage</p>
+                        <button class="upload-btn-modern" onclick="uploadPersonalFiles()">
+                            <i class="fas fa-rocket"></i>
+                            Upload Files
+                        </button>
+                    </div>
+                </div>
+
+                <div id="personalFiles" class="hidden">
+                    <div class="section-title">
+                        <i class="fas fa-folder-open"></i>
+                        My Files
+                    </div>
+                    <ul id="personalFilesList" class="file-list"></ul>
+                </div>
+            </div>
+
+            <!-- Admin Tab -->
+            <div id="admin" class="tab-content hidden">
+                <div class="section-title">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Upload Course Materials
+                </div>
+                <div class="form-group">
+                    <label for="fileName">Display Name</label>
+                    <input id="fileName" placeholder="Enter file display name">
+                </div>
+                <div class="upload-area">
+                    <i class="fas fa-file-upload"></i>
+                    <input type="file" id="adminFile" class="file-input">
+                    <p>Select course material to upload</p>
+                    <button class="upload-btn-modern" onclick="uploadCourseFile()">
+                        <i class="fas fa-rocket"></i>
+                        Upload Course Material
+                    </button>
+                </div>
+            </div>
+
+            <!-- Course Slides Tab -->
+            <div id="slides" class="tab-content hidden">
+                <div class="section-title">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Course Materials
+                </div>
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="courseSearchInput" placeholder="Search course materials..."
+                            onkeyup="searchCourseSlides()">
+                        <button id="clearSearchBtn" class="clear-search hidden" onclick="clearCourseSearch()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <ul id="courseSlidesList" class="file-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Downloads Modal -->
+    <div id="downloadsModal" class="modal hidden">
+        <div class="modal-content" style="width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-download"></i>
+                    My Downloads
+                </h3>
+                <button class="modal-close" onclick="hideDownloads()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul id="downloadsList" class="file-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Viewer Modal -->
+    <div id="fileViewerModal" class="modal hidden">
+        <div class="modal-content" style="width: 900px;">
+            <div class="modal-header">
+                <h3 id="viewerTitle" class="modal-title">File Viewer</h3>
+                <button class="modal-close" onclick="hideFileViewer()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div id="fileViewerContent">
+                    <!-- Text Viewer -->
+                    <div id="textViewer" class="hidden">
+                        <textarea id="textContent" readonly
+                            style="width: 100%; height: 400px; border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--border-radius); font-family: monospace;"></textarea>
+                    </div>
+
+                    <!-- Image Viewer -->
+                    <div id="imageViewer" class="hidden">
+                        <img id="imageContent"
+                            style="max-width: 100%; max-height: 400px; border-radius: var(--border-radius);"
+                            alt="Preview">
+                    </div>
+
+                    <!-- PDF Viewer -->
+                    <div id="pdfViewer" class="hidden">
+                        <embed id="pdfContent" style="width: 100%; height: 500px; border-radius: var(--border-radius);"
+                            type="application/pdf">
+                    </div>
+
+                    <!-- Office Document Viewer -->
+                    <div id="officeViewer" class="hidden">
+                        <iframe id="officeContent"
+                            style="width: 100%; height: 500px; border: 1px solid var(--border-color); border-radius: var(--border-radius);"
+                            frameborder="0"></iframe>
+                    </div>
+
+                    <!-- Unsupported Viewer -->
+                    <div id="unsupportedViewer" class="hidden">
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <p>This file type cannot be previewed. You can download it to view it on your device.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="downloadViewedFile" class="btn btn-primary">
+                    <i class="fas fa-download"></i>
+                    Download
+                </button>
+                <button class="btn btn-secondary" onclick="hideFileViewer()">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 <strong>SlideVault2.0</strong> All rights reserved || k3L🍀</p>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const {createClient} = supabase;
+        const supabaseUrl = "https://otpyjgqkdwzmyvicsfuh.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90cHlqZ3FrZHd6bXl2aWNzZnVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5ODYzNTUsImV4cCI6MjA3MjU2MjM1NX0.gp6GiIU_aOrvMHxWcFENIKqYtIhZGlJmY1FaqL9Pmyg";
+        const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+        // Application state
+        let currentUser = null;
+        const ADMIN_ID = "mikel";
+        const ADMIN_PIN = "1966";
+
+        // Authentication functions
+        function showSignup() {
+            document.getElementById("signup").classList.remove("hidden");
+            document.getElementById("login").classList.add("hidden");
+            document.getElementById("main").classList.add("hidden");
+            document.getElementById("authSection").classList.remove("hidden");
+            document.getElementById("downloadsBtn").classList.add("hidden");
+            document.getElementById("logoutBtn").classList.add("hidden");
+            document.getElementById("welcomeText").style.display = "none";
+        }
+
+        function showLogin() {
+            document.getElementById("login").classList.remove("hidden");
+            document.getElementById("signup").classList.add("hidden");
+            document.getElementById("main").classList.add("hidden");
+            document.getElementById("authSection").classList.remove("hidden");
+            document.getElementById("downloadsBtn").classList.add("hidden");
+            document.getElementById("logoutBtn").classList.add("hidden");
+            document.getElementById("welcomeText").style.display = "none";
+        }
+
+        async function signup() {
+            const studentId = document.getElementById("studentId").value;
+            const pin = document.getElementById("pin").value;
+
+            if (!studentId || !pin) {
+                alert("Please fill in all required fields");
+                return;
+            }
+
+            if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                alert("PIN must be exactly 4 digits");
+                return;
+            }
+
+            try {
+                const {data, error} = await supabaseClient
+                    .from('users')
+                    .insert([{
+                        student_id: studentId,
+                        pin: pin
+                    }]);
+
+                if (error) {
+                    if (error.code === '23505') {
+                        alert("Student ID already exists");
+                    } else {
+                        alert("Registration failed: " + error.message);
+                    }
+                    return;
+                }
+
+                alert("Registration successful! Please login with your credentials.");
+                showLogin();
+            } catch (err) {
+                alert("Registration failed: " + err.message);
+            }
+        }
+
+        async function login() {
+            const id = document.getElementById("loginId").value;
+            const pin = document.getElementById("loginPin").value;
+
+            if (!id || !pin) {
+                alert("Please enter both Student ID and PIN");
+                return;
+            }
+
+            // Check for admin login
+            if (id === ADMIN_ID && pin === ADMIN_PIN) {
+                currentUser = id;
+                document.getElementById("adminTab").classList.remove("hidden");
+                document.getElementById("personalTab").classList.add("hidden");
+                document.getElementById("main").classList.remove("hidden");
+                document.getElementById("authSection").classList.add("hidden");
+                document.getElementById("downloadsBtn").classList.remove("hidden");
+                document.getElementById("logoutBtn").classList.remove("hidden");
+                document.getElementById("welcomeText").style.display = "inline";
+                document.getElementById("userIdDisplay").textContent = id;
+                showTab('admin');
+                await loadCourseSlides();
+                return;
+            }
+
+            // Check user credentials
+            try {
+                const {data, error} = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('student_id', id)
+                    .eq('pin', pin)
+                    .single();
+
+                if (error || !data) {
+                    alert("Invalid credentials");
+                    return;
+                }
+
+                currentUser = id;
+                document.getElementById("adminTab").classList.add("hidden");
+                document.getElementById("personalTab").classList.remove("hidden");
+                document.getElementById("main").classList.remove("hidden");
+                document.getElementById("authSection").classList.add("hidden");
+                document.getElementById("downloadsBtn").classList.remove("hidden");
+                document.getElementById("logoutBtn").classList.remove("hidden");
+                document.getElementById("welcomeText").style.display = "inline";
+                document.getElementById("userIdDisplay").textContent = id;
+
+                showTab('personal');
+                await loadCourseSlides();
+            } catch (err) {
+                alert("Login failed: " + err.message);
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById("downloadsBtn").classList.add("hidden");
+            document.getElementById("logoutBtn").classList.add("hidden");
+            document.getElementById("welcomeText").style.display = "none";
+            showLogin();
+        }
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.getElementById("personal").classList.add("hidden");
+            document.getElementById("admin").classList.add("hidden");
+            document.getElementById("slides").classList.add("hidden");
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.remove("hidden");
+            document.getElementById(tabName + "Tab").classList.add("active");
+
+            if (tabName === 'personal') {
+                showPersonalSection('upload');
+            } else if (tabName === 'slides') {
+                loadCourseSlides();
+            }
+        }
+
+        function showPersonalSection(section) {
+            // Remove active class from all sub-tab buttons
+            document.querySelectorAll(".sub-tabs .tab-button").forEach(btn => btn.classList.remove("active"));
+
+            if (section === 'upload') {
+                document.getElementById("personalUpload").classList.remove("hidden");
+                document.getElementById("personalFiles").classList.add("hidden");
+                document.querySelector('.sub-tabs .tab-button').classList.add("active");
+            } else {
+                document.getElementById("personalUpload").classList.add("hidden");
+                document.getElementById("personalFiles").classList.remove("hidden");
+                document.querySelectorAll('.sub-tabs .tab-button')[1].classList.add("active");
+                loadPersonalFiles();
+            }
+        }
+
+        // File upload functions
+        async function uploadPersonalFiles() {
+            const files = document.getElementById("personalFile").files;
+            const customName = document.getElementById("customFileName").value.trim();
+
+            if (files.length === 0) {
+                alert("Please select files to upload");
+                return;
+            }
+
+            if (files.length > 1 && customName) {
+                alert("Custom name can only be used when uploading a single file");
+                return;
+            }
+
+            for (let file of files) {
+                try {
+                    const displayName = customName || file.name;
+                    const fileName = `${currentUser}/${Date.now()}_${file.name}`;
+
+                    // Upload to storage
+                    const {error: storageError} = await supabaseClient.storage
+                        .from("personal_uploads")
+                        .upload(fileName, file, {upsert: true});
+
+                    if (storageError) {
+                        alert(`Upload error for ${file.name}: ${storageError.message}`);
+                        continue;
+                    }
+
+                    // Save metadata to database
+                    const {error: dbError} = await supabaseClient
+                        .from('personal_files')
+                        .insert({
+                            student_id: currentUser,
+                            file_name: fileName,
+                            original_name: displayName,
+                            file_path: fileName,
+                            file_size: file.size,
+                            mime_type: file.type
+                        });
+
+                    if (dbError) {
+                        alert(`Database error for ${file.name}: ${dbError.message}`);
+                    }
+                } catch (err) {
+                    alert(`Error uploading ${file.name}: ${err.message}`);
+                }
+            }
+
+            document.getElementById("personalFile").value = "";
+            document.getElementById("customFileName").value = "";
+            alert("Files uploaded successfully!");
+        }
+
+        async function uploadCourseFile() {
+            const file = document.getElementById("adminFile").files[0];
+            const fileName = document.getElementById("fileName").value;
+
+            if (!file) {
+                alert("Please select a file");
+                return;
+            }
+
+            if (!fileName) {
+                alert("Please enter a file name");
+                return;
+            }
+
+            try {
+                const storageFileName = `${Date.now()}_${file.name}`;
+
+                // Upload to storage
+                const {error: storageError} = await supabaseClient.storage
+                    .from("course_slides")
+                    .upload(storageFileName, file, {upsert: true});
+
+                if (storageError) {
+                    alert(`Upload error: ${storageError.message}`);
+                    return;
+                }
+
+                // Save metadata to database
+                const {error: dbError} = await supabaseClient
+                    .from('course_slides')
+                    .insert({
+                        file_name: storageFileName,
+                        display_name: fileName,
+                        file_path: storageFileName,
+                        file_size: file.size,
+                        mime_type: file.type
+                    });
+
+                if (dbError) {
+                    alert(`Database error: ${dbError.message}`);
+                    return;
+                }
+
+                document.getElementById("adminFile").value = "";
+                document.getElementById("fileName").value = "";
+                alert("Course material uploaded successfully!");
+                await loadCourseSlides();
+            } catch (err) {
+                alert(`Upload error: ${err.message}`);
+            }
+        }
+
+        // Search functionality
+        function searchCourseSlides() {
+            const searchTerm = document.getElementById("courseSearchInput").value.toLowerCase().trim();
+            const clearBtn = document.getElementById("clearSearchBtn");
+
+            if (searchTerm === "") {
+                clearBtn.classList.add("hidden");
+                renderCourseSlides(allCourseSlides);
+                return;
+            }
+
+            clearBtn.classList.remove("hidden");
+
+            const filteredSlides = allCourseSlides.filter(slide =>
+                slide.display_name.toLowerCase().includes(searchTerm)
+            );
+
+            renderCourseSlides(filteredSlides);
+        }
+
+        function clearCourseSearch() {
+            document.getElementById("courseSearchInput").value = "";
+            document.getElementById("clearSearchBtn").classList.add("hidden");
+            renderCourseSlides(allCourseSlides);
+        }
+
+        // File management functions
+        async function loadPersonalFiles() {
+            try {
+                const {data, error} = await supabaseClient
+                    .from('personal_files')
+                    .select('*')
+                    .eq('student_id', currentUser)
+                    .order('original_name', {ascending: true});
+
+                if (error) {
+                    alert(`Error loading files: ${error.message}`);
+                    return;
+                }
+
+                const filesList = document.getElementById("personalFilesList");
+                filesList.innerHTML = "";
+
+                if (data.length === 0) {
+                    filesList.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-folder-open"></i>
+              <p>No files uploaded yet</p>
+            </div>
+          `;
+                    return;
+                }
+
+                data.forEach(file => {
+                    const li = document.createElement("li");
+                    li.className = "file-item";
+
+                    const fileExtension = file.original_name.split('.').pop().toLowerCase();
+                    const iconClass = getFileIcon(fileExtension);
+
+                    li.innerHTML = `
+            <div class="file-info">
+              <div class="file-icon">
+                <i class="${iconClass}"></i>
+              </div>
+              <div class="file-details">
+                <div class="file-name">${file.original_name}</div>
+                <div class="file-meta">Uploaded: ${new Date(file.upload_date).toLocaleDateString()}</div>
+              </div>
+            </div>
+            <div class="file-actions">
+              <button class="btn btn-primary" onclick="downloadPersonalFile('${file.id}', '${file.file_name}', '${file.original_name}')">
+                <i class="fas fa-download"></i>
+              </button>
+              <button class="btn btn-secondary" onclick="editPersonalFile('${file.id}', '${file.original_name}')">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-danger" onclick="deletePersonalFile('${file.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+                    filesList.appendChild(li);
+                });
+            } catch (err) {
+                alert(`Error loading files: ${err.message}`);
+            }
+        }
+
+        let allCourseSlides = [];
+
+        async function loadCourseSlides() {
+            try {
+                const {data, error} = await supabaseClient
+                    .from('course_slides')
+                    .select('*')
+                    .order('display_name', {ascending: true});
+
+                if (error) {
+                    alert(`Error loading course slides: ${error.message}`);
+                    return;
+                }
+
+                allCourseSlides = data;
+                renderCourseSlides(data);
+            } catch (err) {
+                alert(`Error loading course slides: ${err.message}`);
+            }
+        }
+
+        function renderCourseSlides(slides) {
+            const slidesList = document.getElementById("courseSlidesList");
+            slidesList.innerHTML = "";
+
+            if (slides.length === 0) {
+                slidesList.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <p>No course materials available</p>
+          </div>
+        `;
+                return;
+            }
+
+            slides.forEach(slide => {
+                const li = document.createElement("li");
+                li.className = "file-item";
+
+                const fileExtension = slide.display_name.split('.').pop().toLowerCase();
+                const iconClass = getFileIcon(fileExtension);
+
+                let actionsHTML = `
+            <button class="btn btn-primary" onclick="downloadCourseSlide('${slide.id}', '${slide.file_name}', '${slide.display_name}')">
+              <i class="fas fa-download"></i>
+            </button>
+          `;
+
+                if (currentUser === ADMIN_ID) {
+                    actionsHTML += `
+              <button class="btn btn-secondary" onclick="editCourseSlide('${slide.id}', '${slide.display_name}')">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-danger" onclick="deleteCourseSlide('${slide.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            `;
+                }
+
+                li.innerHTML = `
+            <div class="file-info">
+              <div class="file-icon">
+                <i class="${iconClass}"></i>
+              </div>
+              <div class="file-details">
+                <div class="file-name">${slide.display_name}</div>
+                <div class="file-meta">Uploaded: ${new Date(slide.upload_date).toLocaleDateString()}</div>
+              </div>
+            </div>
+            <div class="file-actions">
+              ${actionsHTML}
+            </div>
+          `;
+                slidesList.appendChild(li);
+            });
+        }
+
+        function getFileIcon(fileExtension) {
+            const iconMap = {
+                'pdf': 'fas fa-file-pdf',
+                'doc': 'fas fa-file-word',
+                'docx': 'fas fa-file-word',
+                'xls': 'fas fa-file-excel',
+                'xlsx': 'fas fa-file-excel',
+                'ppt': 'fas fa-file-powerpoint',
+                'pptx': 'fas fa-file-powerpoint',
+                'jpg': 'fas fa-file-image',
+                'jpeg': 'fas fa-file-image',
+                'png': 'fas fa-file-image',
+                'gif': 'fas fa-file-image',
+                'txt': 'fas fa-file-alt',
+                'zip': 'fas fa-file-archive',
+                'rar': 'fas fa-file-archive',
+                'mp4': 'fas fa-file-video',
+                'mp3': 'fas fa-file-audio',
+            };
+            return iconMap[fileExtension] || 'fas fa-file';
+        }
+
+        // File actions
+        async function downloadPersonalFile(fileId, fileName, originalName) {
+            try {
+                const {data, error} = await supabaseClient.storage
+                    .from("personal_uploads")
+                    .download(fileName);
+
+                if (error) {
+                    alert(`Download error: ${error.message}`);
+                    return;
+                }
+
+                const url = URL.createObjectURL(data);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = originalName;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                // Save to local downloads and record in database
+                saveToLocalDownloads(originalName, 'personal', data);
+                await supabaseClient
+                    .from('downloads')
+                    .insert({
+                        student_id: currentUser,
+                        file_name: originalName,
+                        file_type: 'personal',
+                        file_id: fileId
+                    });
+            } catch (err) {
+                alert(`Download error: ${err.message}`);
+            }
+        }
+
+        async function downloadCourseSlide(slideId, fileName, displayName) {
+            try {
+                const {data, error} = await supabaseClient.storage
+                    .from("course_slides")
+                    .download(fileName);
+
+                if (error) {
+                    alert(`Download error: ${error.message}`);
+                    return;
+                }
+
+                const url = URL.createObjectURL(data);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = displayName;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                // Save to local downloads and record in database
+                saveToLocalDownloads(displayName, 'course', data);
+                await supabaseClient
+                    .from('downloads')
+                    .insert({
+                        student_id: currentUser,
+                        file_name: displayName,
+                        file_type: 'course',
+                        file_id: slideId
+                    });
+            } catch (err) {
+                alert(`Download error: ${err.message}`);
+            }
+        }
+
+        async function deletePersonalFile(fileId) {
+            if (!confirm("Are you sure you want to delete this file?")) {
+                return;
+            }
+
+            try {
+                // Get file info first
+                const {data: fileData, error: fetchError} = await supabaseClient
+                    .from('personal_files')
+                    .select('file_name')
+                    .eq('id', fileId)
+                    .single();
+
+                if (fetchError) {
+                    alert(`Error: ${fetchError.message}`);
+                    return;
+                }
+
+                // Delete from storage
+                const {error: storageError} = await supabaseClient.storage
+                    .from("personal_uploads")
+                    .remove([fileData.file_name]);
+
+                if (storageError) {
+                    alert(`Storage deletion error: ${storageError.message}`);
+                    return;
+                }
+
+                // Delete from database
+                const {error: dbError} = await supabaseClient
+                    .from('personal_files')
+                    .delete()
+                    .eq('id', fileId);
+
+                if (dbError) {
+                    alert(`Database deletion error: ${dbError.message}`);
+                    return;
+                }
+
+                // Also remove any download records for this file
+                await supabaseClient
+                    .from('downloads')
+                    .delete()
+                    .eq('file_id', fileId)
+                    .eq('file_type', 'personal');
+
+                await loadPersonalFiles();
+            } catch (err) {
+                alert(`Delete error: ${err.message}`);
+            }
+        }
+
+        async function deleteCourseSlide(slideId) {
+            if (!confirm("Are you sure you want to delete this course slide?")) {
+                return;
+            }
+
+            try {
+                // Get file info first
+                const {data: slideData, error: fetchError} = await supabaseClient
+                    .from('course_slides')
+                    .select('file_name')
+                    .eq('id', slideId)
+                    .single();
+
+                if (fetchError) {
+                    alert(`Error: ${fetchError.message}`);
+                    return;
+                }
+
+                // Delete from storage
+                const {error: storageError} = await supabaseClient.storage
+                    .from("course_slides")
+                    .remove([slideData.file_name]);
+
+                if (storageError) {
+                    alert(`Storage deletion error: ${storageError.message}`);
+                    return;
+                }
+
+                // Delete from database
+                const {error: dbError} = await supabaseClient
+                    .from('course_slides')
+                    .delete()
+                    .eq('id', slideId);
+
+                if (dbError) {
+                    alert(`Database deletion error: ${dbError.message}`);
+                    return;
+                }
+
+                // Also remove any download records for this slide
+                await supabaseClient
+                    .from('downloads')
+                    .delete()
+                    .eq('file_id', slideId)
+                    .eq('file_type', 'course');
+
+                await loadCourseSlides();
+            } catch (err) {
+                alert(`Delete error: ${err.message}`);
+            }
+        }
+
+        // Local downloads storage
+        function getLocalDownloads() {
+            const downloads = localStorage.getItem(`downloads_${currentUser}`);
+            return downloads ? JSON.parse(downloads) : [];
+        }
+
+        function saveToLocalDownloads(fileName, fileType, fileBlob) {
+            const downloads = getLocalDownloads();
+            const downloadEntry = {
+                id: Date.now().toString(),
+                fileName: fileName,
+                fileType: fileType,
+                downloadDate: new Date().toISOString(),
+                fileData: null // We'll store the blob URL instead
+            };
+
+            // Create a blob URL for the file
+            const url = URL.createObjectURL(fileBlob);
+            downloadEntry.fileUrl = url;
+
+            downloads.push(downloadEntry);
+            localStorage.setItem(`downloads_${currentUser}`, JSON.stringify(downloads));
+        }
+
+        // Downloads management
+        function showDownloads() {
+            document.getElementById("downloadsModal").classList.remove("hidden");
+            renderLocalDownloads();
+        }
+
+        function hideDownloads() {
+            document.getElementById("downloadsModal").classList.add("hidden");
+        }
+
+        // Edit functions
+        async function editPersonalFile(fileId, currentName) {
+            const newName = prompt("Enter new file name:", currentName);
+            if (!newName || newName === currentName) return;
+
+            try {
+                const {error} = await supabaseClient
+                    .from('personal_files')
+                    .update({original_name: newName})
+                    .eq('id', fileId);
+
+                if (error) {
+                    alert(`Error updating file: ${error.message}`);
+                    return;
+                }
+
+                await loadPersonalFiles();
+                alert("File name updated successfully!");
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        async function editCourseSlide(slideId, currentName) {
+            const newName = prompt("Enter new display name:", currentName);
+            if (!newName || newName === currentName) return;
+
+            try {
+                const {error} = await supabaseClient
+                    .from('course_slides')
+                    .update({display_name: newName})
+                    .eq('id', slideId);
+
+                if (error) {
+                    alert(`Error updating slide: ${error.message}`);
+                    return;
+                }
+
+                await loadCourseSlides();
+                alert("Course slide name updated successfully!");
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        function renderLocalDownloads() {
+            const downloads = getLocalDownloads();
+            const downloadsList = document.getElementById("downloadsList");
+            downloadsList.innerHTML = "";
+
+            if (downloads.length === 0) {
+                downloadsList.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-download"></i>
+            <p>No downloads yet</p>
+          </div>
+        `;
+                return;
+            }
+
+            downloads.forEach(download => {
+                const li = document.createElement("li");
+                li.className = "file-item";
+
+                const fileExtension = download.fileName.split('.').pop().toLowerCase();
+                const iconClass = getFileIcon(fileExtension);
+
+                li.innerHTML = `
+          <div class="file-info">
+            <div class="file-icon">
+              <i class="${iconClass}"></i>
+            </div>
+            <div class="file-details">
+              <div class="file-name">${download.fileName}</div>
+              <div class="file-meta">${download.fileType} • Downloaded: ${new Date(download.downloadDate).toLocaleDateString()}</div>
+            </div>
+          </div>
+          <div class="file-actions">
+            <button class="btn btn-primary" onclick="openDownloadedFile('${download.id}')">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-secondary" onclick="redownloadFile('${download.id}')">
+              <i class="fas fa-download"></i>
+            </button>
+            <button class="btn btn-danger" onclick="removeFromDownloads('${download.id}')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+                downloadsList.appendChild(li);
+            });
+        }
+
+        function redownloadFile(downloadId) {
+            const downloads = getLocalDownloads();
+            const download = downloads.find(d => d.id === downloadId);
+            if (!download) {
+                alert("File not found in downloads");
+                return;
+            }
+
+            // Create download link
+            const a = document.createElement("a");
+            a.href = download.fileUrl;
+            a.download = download.fileName;
+            a.click();
+        }
+
+        function removeFromDownloads(downloadId) {
+            if (!confirm("Remove this file from downloads?")) return;
+
+            const downloads = getLocalDownloads();
+            const filteredDownloads = downloads.filter(d => d.id !== downloadId);
+            localStorage.setItem(`downloads_${currentUser}`, JSON.stringify(filteredDownloads));
+            renderLocalDownloads();
+        }
+
+        // File viewer functions
+        function openDownloadedFile(downloadId) {
+            const downloads = getLocalDownloads();
+            const download = downloads.find(d => d.id === downloadId);
+            if (!download) {
+                alert("File not found in downloads");
+                return;
+            }
+
+            if (!download.fileUrl) {
+                alert("File data not available for viewing");
+                return;
+            }
+
+            showFileViewer(download.fileName, download.fileUrl);
+        }
+
+        function showFileViewer(fileName, fileUrl) {
+            document.getElementById("viewerTitle").innerHTML = `<i class="fas fa-eye"></i> Viewing: ${fileName}`;
+            document.getElementById("fileViewerModal").classList.remove("hidden");
+
+            // Hide all viewers first
+            document.getElementById("textViewer").classList.add("hidden");
+            document.getElementById("imageViewer").classList.add("hidden");
+            document.getElementById("pdfViewer").classList.add("hidden");
+            document.getElementById("officeViewer").classList.add("hidden");
+            document.getElementById("unsupportedViewer").classList.add("hidden");
+
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+
+            // Check file type and show appropriate viewer
+            if (['txt', 'md', 'js', 'html', 'css', 'json', 'xml', 'csv'].includes(fileExtension)) {
+                showTextViewer(fileUrl);
+            } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
+                showImageViewer(fileUrl);
+            } else if (fileExtension === 'pdf') {
+                showPdfViewer(fileUrl);
+            } else if (['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'].includes(fileExtension)) {
+                showOfficeViewer(fileUrl, fileName);
+            } else {
+                showUnsupportedViewer();
+            }
+
+            // Set up download button
+            document.getElementById("downloadViewedFile").onclick = function () {
+                const a = document.createElement("a");
+                a.href = fileUrl;
+                a.download = fileName;
+                a.click();
+            };
+        }
+
+        function showTextViewer(fileUrl) {
+            document.getElementById("textViewer").classList.remove("hidden");
+
+            fetch(fileUrl)
+                .then(response => response.text())
+                .then(text => {
+                    document.getElementById("textContent").value = text;
+                })
+                .catch(err => {
+                    document.getElementById("textContent").value = "Error loading file content: " + err.message;
+                });
+        }
+
+        function showImageViewer(fileUrl) {
+            document.getElementById("imageViewer").classList.remove("hidden");
+            document.getElementById("imageContent").src = fileUrl;
+        }
+
+        function showPdfViewer(fileUrl) {
+            document.getElementById("pdfViewer").classList.remove("hidden");
+            document.getElementById("pdfContent").src = fileUrl;
+        }
+
+        function showOfficeViewer(fileUrl, fileName) {
+            document.getElementById("officeViewer").classList.remove("hidden");
+
+            // Use Microsoft Office Online viewer for office documents
+            const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+            document.getElementById("officeContent").src = officeViewerUrl;
+
+            // Fallback: if the online viewer fails, show a message
+            document.getElementById("officeContent").onerror = function () {
+                document.getElementById("officeViewer").innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-file-alt"></i>
+            <p><strong>Preview not available for this Office document.</strong></p>
+            <p>The file "${fileName}" cannot be previewed online. Please download it to view the content.</p>
+            <button class="btn btn-primary" onclick="document.getElementById('downloadViewedFile').click()" style="margin-top: 1rem;">
+              <i class="fas fa-download"></i>
+              Download File
+            </button>
+          </div>
+        `;
+            };
+        }
+
+        function showUnsupportedViewer() {
+            document.getElementById("unsupportedViewer").classList.remove("hidden");
+        }
+
+        function hideFileViewer() {
+            document.getElementById("fileViewerModal").classList.add("hidden");
+
+            // Clean up content
+            document.getElementById("textContent").value = "";
+            document.getElementById("imageContent").src = "";
+            document.getElementById("pdfContent").src = "";
+            document.getElementById("officeContent").src = "";
+
+            // Reset office viewer content if it was modified
+            document.getElementById("officeViewer").innerHTML = `
+        <iframe id="officeContent" style="width: 100%; height: 500px; border: 1px solid var(--border-color); border-radius: var(--border-radius);" frameborder="0"></iframe>
+      `;
+
+            document.getElementById("downloadViewedFile").onclick = null;
+        }
+
+        // Initialize the app
+        showSignup();
+    </script>
+</body>
+
+</html>
