@@ -844,6 +844,22 @@
         }
     </style>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+    <link rel="preload" href="https://unpkg.com/@supabase/supabase-js@2" as="script">
+    
+    <!-- DNS prefetch for external domains -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//unpkg.com">
+    <link rel="dns-prefetch" href="//otpyjgqkdwzmyvicsfuh.supabase.co">
+    
+    <!-- Preconnect to important origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://otpyjgqkdwzmyvicsfuh.supabase.co" crossorigin>
 </head>
 
 <body>
@@ -851,12 +867,12 @@
     <div id="appHeader" class="app-header">
         <div class="header-content">
             <div class="logo">
-                <i class="fas fa-graduation-cap"></i>
-                <span>SlideVault2.0</span>
+                <h2><i class="fas fa-graduation-cap"></i>
+                <span>SlideVault 2.0</span></h2>
             </div>
             <div class="welcome-message">
                 <span id="welcomeText" style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem;">
-                    Welcome <span id="userIdDisplay"></span>
+                    <h3>Welcome <span id="userIdDisplay"></span> 👋</h3>
                 </span>
             </div>
         </div>
@@ -875,6 +891,16 @@
         <div id="authSection">
             <div class="auth-container">
                 <div class="auth-card">
+                    <!-- Welcome Message -->
+                    <div class="auth-welcome-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem; text-align: center;">
+                        <h4 style="margin: 0 0 0.5rem 0; font-size: 1.3rem; font-weight: 600;">
+                             Welcome to SlideVault
+                        </h4>
+                        <p style="margin: 0; font-size: 0.95rem; opacity: 0.95; line-height: 1.4;">
+                            <em>Your secure digital repository for course materials and personal files. Upload, organize, and access your course materials anytime, anywhere.</em>
+                        </p>
+                    </div>
+
                     <!-- Sign Up Form -->
                     <div id="signup">
                         <div class="auth-title">Welcome</div>
@@ -1468,7 +1494,7 @@
               </div>
             </div>
             <div class="file-actions">
-              <button class="btn btn-primary" onclick="downloadPersonalFile('${file.id}', '${file.file_name}', '${file.original_name}')">
+              <button class="btn btn-primary" onclick="downloadPersonalFileWithPrefetch('${file.id}', '${file.file_name}', '${file.original_name}')">
                 <i class="fas fa-download"></i>
               </button>
               <button class="btn btn-secondary" onclick="editPersonalFile('${file.id}', '${file.original_name}')">
@@ -1529,7 +1555,7 @@
                 const iconClass = getFileIcon(fileExtension);
 
                 let actionsHTML = `
-            <button class="btn btn-primary" onclick="downloadCourseSlide('${slide.id}', '${slide.file_name}', '${slide.display_name}')">
+            <button class="btn btn-primary" onclick="downloadCourseSlideWithPrefetch('${slide.id}', '${slide.file_name}', '${slide.display_name}')">
               <i class="fas fa-download"></i>
             </button>
           `;
@@ -2026,8 +2052,254 @@
             document.getElementById("downloadViewedFile").onclick = null;
         }
 
+        // Prefetching and preloading functionality
+        class PrefetchManager {
+            constructor() {
+                this.prefetchedFiles = new Map();
+                this.prefetchQueue = [];
+                this.isProcessing = false;
+            }
+
+            // Prefetch file metadata for faster loading
+            async prefetchFileMetadata() {
+                if (!currentUser) return;
+
+                try {
+                    // Prefetch personal files metadata
+                    const personalPromise = supabaseClient
+                        .from('personal_files')
+                        .select('*')
+                        .eq('student_id', currentUser);
+
+                    // Prefetch course slides metadata
+                    const courseSlidesPromise = supabaseClient
+                        .from('course_slides')
+                        .select('*');
+
+                    // Prefetch download history
+                    const downloadsPromise = supabaseClient
+                        .from('downloads')
+                        .select('*')
+                        .eq('student_id', currentUser);
+
+                    const [personalFiles, courseSlides, downloads] = await Promise.all([
+                        personalPromise,
+                        courseSlidesPromise, 
+                        downloadsPromise
+                    ]);
+
+                    // Cache the results
+                    this.prefetchedFiles.set('personal_files', personalFiles.data || []);
+                    this.prefetchedFiles.set('course_slides', courseSlides.data || []);
+                    this.prefetchedFiles.set('downloads', downloads.data || []);
+
+                    console.log('File metadata prefetched successfully');
+                } catch (error) {
+                    console.warn('Failed to prefetch metadata:', error);
+                }
+            }
+
+            // Prefetch small files that are likely to be accessed
+            async prefetchSmallFiles() {
+                if (!currentUser) return;
+
+                const personalFiles = this.prefetchedFiles.get('personal_files') || [];
+                const courseSlides = this.prefetchedFiles.get('course_slides') || [];
+
+                // Only prefetch files smaller than 1MB
+                const smallFiles = [
+                    ...personalFiles.filter(f => f.file_size < 1024 * 1024),
+                    ...courseSlides.filter(f => f.file_size < 1024 * 1024)
+                ].slice(0, 5); // Limit to 5 files
+
+                for (const file of smallFiles) {
+                    this.addToPrefetchQueue(file);
+                }
+
+                this.processPrefetchQueue();
+            }
+
+            addToPrefetchQueue(file) {
+                if (!this.prefetchQueue.find(f => f.id === file.id)) {
+                    this.prefetchQueue.push(file);
+                }
+            }
+
+            async processPrefetchQueue() {
+                if (this.isProcessing || this.prefetchQueue.length === 0) return;
+
+                this.isProcessing = true;
+
+                while (this.prefetchQueue.length > 0) {
+                    const file = this.prefetchQueue.shift();
+                    await this.prefetchFile(file);
+                    
+                    // Add delay to avoid overwhelming the server
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                this.isProcessing = false;
+            }
+
+            async prefetchFile(file) {
+                try {
+                    const bucket = file.student_id ? 'personal_uploads' : 'course_slides';
+                    const fileName = file.file_name || file.file_path;
+
+                    const { data, error } = await supabaseClient.storage
+                        .from(bucket)
+                        .download(fileName);
+
+                    if (!error && data) {
+                        // Store in memory cache for quick access
+                        const cacheKey = `${bucket}_${fileName}`;
+                        this.prefetchedFiles.set(cacheKey, {
+                            data: data,
+                            timestamp: Date.now(),
+                            originalName: file.original_name || file.display_name
+                        });
+
+                        console.log(`Prefetched: ${file.original_name || file.display_name}`);
+                    }
+                } catch (error) {
+                    console.warn(`Failed to prefetch file: ${file.original_name || file.display_name}`, error);
+                }
+            }
+
+            // Get prefetched file data
+            getPrefetchedFile(bucket, fileName) {
+                const cacheKey = `${bucket}_${fileName}`;
+                const cached = this.prefetchedFiles.get(cacheKey);
+                
+                if (cached) {
+                    // Check if cache is still valid (24 hours)
+                    const age = Date.now() - cached.timestamp;
+                    if (age < 24 * 60 * 60 * 1000) {
+                        return cached.data;
+                    } else {
+                        // Remove expired cache
+                        this.prefetchedFiles.delete(cacheKey);
+                    }
+                }
+                return null;
+            }
+
+            // Clear cache to free memory
+            clearCache() {
+                this.prefetchedFiles.clear();
+                this.prefetchQueue = [];
+                console.log('Prefetch cache cleared');
+            }
+
+            // Preload next likely actions
+            preloadNextActions(currentTab) {
+                switch(currentTab) {
+                    case 'personal':
+                        // Preload course slides data when user is in personal tab
+                        setTimeout(() => this.prefetchFileMetadata(), 1000);
+                        break;
+                    case 'slides':
+                        // Preload small course materials
+                        setTimeout(() => this.prefetchSmallFiles(), 1000);
+                        break;
+                }
+            }
+        }
+
+        // Initialize prefetch manager
+        const prefetchManager = new PrefetchManager();
+
+        // Enhanced download function with prefetch support
+        async function downloadPersonalFileWithPrefetch(fileId, fileName, originalName) {
+            // Check if file is already prefetched
+            const prefetchedData = prefetchManager.getPrefetchedFile('personal_uploads', fileName);
+            
+            if (prefetchedData) {
+                // Use prefetched data
+                const url = URL.createObjectURL(prefetchedData);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = originalName;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                saveToLocalDownloads(originalName, 'personal', prefetchedData);
+                await supabaseClient
+                    .from('downloads')
+                    .insert({
+                        student_id: currentUser,
+                        file_name: originalName,
+                        file_type: 'personal',
+                        file_id: fileId
+                    });
+                
+                console.log(`Used prefetched data for: ${originalName}`);
+                return;
+            }
+
+            // Fallback to regular download
+            return downloadPersonalFile(fileId, fileName, originalName);
+        }
+
+        async function downloadCourseSlideWithPrefetch(slideId, fileName, displayName) {
+            // Check if file is already prefetched
+            const prefetchedData = prefetchManager.getPrefetchedFile('course_slides', fileName);
+            
+            if (prefetchedData) {
+                // Use prefetched data
+                const url = URL.createObjectURL(prefetchedData);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = displayName;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                saveToLocalDownloads(displayName, 'course', prefetchedData);
+                await supabaseClient
+                    .from('downloads')
+                    .insert({
+                        student_id: currentUser,
+                        file_name: displayName,
+                        file_type: 'course',
+                        file_id: slideId
+                    });
+                
+                console.log(`Used prefetched data for: ${displayName}`);
+                return;
+            }
+
+            // Fallback to regular download
+            return downloadCourseSlide(slideId, fileName, displayName);
+        }
+
         // Initialize the app
-        showSignup();
+        showLogin();
+
+        // Initialize prefetching after user login
+        const originalLogin = login;
+        window.login = async function() {
+            await originalLogin();
+            if (currentUser) {
+                // Start prefetching after successful login
+                setTimeout(() => {
+                    prefetchManager.prefetchFileMetadata();
+                }, 2000);
+            }
+        };
+
+        // Add prefetch cleanup on logout
+        const originalLogout = logout;
+        window.logout = function() {
+            prefetchManager.clearCache();
+            originalLogout();
+        };
+
+        // Enhanced tab switching with preloading
+        const originalShowTab = showTab;
+        window.showTab = function(tabName) {
+            originalShowTab(tabName);
+            prefetchManager.preloadNextActions(tabName);
+        };
     </script>
 </body>
 
